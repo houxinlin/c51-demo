@@ -1,0 +1,208 @@
+C51 COMPILER V9.60.0.0   MAIN                                                              11/04/2022 16:01:51 PAGE 1   
+
+
+C51 COMPILER V9.60.0.0, COMPILATION OF MODULE MAIN
+OBJECT MODULE PLACED IN .\Objects\main.obj
+COMPILER INVOKED BY: E:\app\developerapps\keilc51\C51\BIN\C51.EXE main.c OPTIMIZE(8,SPEED) BROWSE DEBUG OBJECTEXTEND PRI
+                    -NT(.\Listings\main.lst) TABS(2) OBJECT(.\Objects\main.obj)
+
+line level    source
+
+   1          #include "reg52.h"
+   2          
+   3          #include "stdio.h"
+   4          
+   5          
+   6          #define LINK_LED_NUMBER 8
+   7          sbit pin =P2^0;
+   8          sbit keyPin1 =P0^4;
+   9          sbit keyPin2 =P0^5;
+  10          sbit keyPin3 =P0^6;
+  11          sbit changeFunctionKey = P3^2; 
+  12          sbit changeSpeedKey = P3^3; 
+  13          
+  14          sbit p00=P0^0;
+  15          sbit p01=P0^1;
+  16          sbit p02=P0^2;
+  17          sbit p03=P0^3;
+  18          
+  19          unsigned int T0Count=0;
+  20          
+  21          int speed=500;
+  22          int state=0;
+  23          int LED_FF=0xff;
+  24          int loopLedState =1;
+  25          int ledState =0xff;
+  26          unsigned int  NUMBER[]={0xF9,0xA4,0xB0,0x99,0x92,0x82,0xf8,0x80,0x98}; 
+  27          int numberState =1;
+  28          void delay_ms(int  z)
+  29          {
+  30   1         int  x,y;
+  31   1         for(x=z;x>0;x--)
+  32   1         for(y=110;y>0;y--);
+  33   1      }
+  34          
+  35          void display(){
+  36   1        p00=1;
+  37   1        P1 =NUMBER[1];
+  38   1        delay_ms(10);
+  39   1        p00=0;
+  40   1        
+  41   1        p01=1;
+  42   1        P1 =NUMBER[2];
+  43   1        delay_ms(10);
+  44   1        p01=0;
+  45   1      
+  46   1      }
+  47          void ledFunction1(){
+  48   1        P2=ledState=~ledState;
+  49   1      
+  50   1      }
+  51          void ledFunction2(){
+  52   1            P2= LED_FF & ~(1<<(state++));
+  53   1            state=state>=LINK_LED_NUMBER?0:state;
+  54   1      
+C51 COMPILER V9.60.0.0   MAIN                                                              11/04/2022 16:01:51 PAGE 2   
+
+  55   1      }
+  56          void ledFunction3(){
+  57   1            int   i;
+  58   1      
+  59   1            for(i =0;i<LINK_LED_NUMBER;i++){
+  60   2              P2= LED_FF & ~(1<<i);
+  61   2              delay_ms(100);
+  62   2            }
+  63   1            P2=0xff;
+  64   1      
+  65   1      }
+  66          void ledFunction4(){
+  67   1        if(P2==0x00 || P2==0xff){
+  68   2              P2=0x00;
+  69   2        }else{
+  70   2              P2=~P2;
+  71   2        }
+  72   1      
+  73   1      }
+  74          void ledFunction5(){
+  75   1        int left =3;
+  76   1        int right=4;
+  77   1        while(left!=-1 && right !=8){
+  78   2          P2=(LED_FF & ~(1<<(left)))  &  ~(1<<(right));
+  79   2          delay_ms(100);
+  80   2          right++;left--;
+  81   2        }
+  82   1        P2=0xff;
+  83   1      }
+  84          void ledFunction6(){
+  85   1        int left =0;
+  86   1        int right=7;
+  87   1        while(left!=4 && right !=3){
+  88   2          P2=(LED_FF & ~(1<<(left)))  &  ~(1<<(right));
+  89   2          delay_ms(100);
+  90   2          right--;left++;
+  91   2        }
+  92   1        P2=0xff;
+  93   1      }
+  94          void ledFunction7(){
+  95   1          int i =rand()%8;
+*** WARNING C206 IN LINE 95 OF main.c: 'rand': missing function-prototype
+  96   1          int j =rand()%8;
+  97   1          int k =rand()%8;
+  98   1        
+  99   1          P2=LED_FF & ~(1<<(i)) & ~(1<<j)& ~(1<<k);
+ 100   1      }
+ 101          
+ 102          
+ 103          
+ 104          void main()
+ 105          {   
+ 106   1        EX0 = 1;
+ 107   1        EX1=1;
+ 108   1        IT0 = 1;
+ 109   1        EA  = 1;
+ 110   1        p00 =1;p01 =0;p02 =0;p03 =0;
+ 111   1        P1=NUMBER[loopLedState-1];
+ 112   1        while(1)
+ 113   1      
+ 114   1        {   
+ 115   2      
+C51 COMPILER V9.60.0.0   MAIN                                                              11/04/2022 16:01:51 PAGE 3   
+
+ 116   2                while(loopLedState==1){
+ 117   3                      ledFunction1();
+ 118   3                      delay_ms(500);
+ 119   3                }
+ 120   2                while(loopLedState==2){
+ 121   3                      ledFunction3();
+ 122   3                      delay_ms(speed);
+ 123   3                }
+ 124   2                while(loopLedState==3){
+ 125   3                      ledFunction5();
+ 126   3                      delay_ms(speed);
+ 127   3                }
+ 128   2                while(loopLedState==4){
+ 129   3                      ledFunction6();
+ 130   3                      delay_ms(speed);
+ 131   3                }
+ 132   2                while(loopLedState==5){
+ 133   3                      ledFunction7();
+ 134   3                      delay_ms(50);
+ 135   3                }         
+ 136   2                
+ 137   2      }
+ 138   1        }
+ 139          void interruptHandler() interrupt 0
+ 140          {
+ 141   1        if(changeFunctionKey == 0)
+ 142   1        {
+ 143   2          
+ 144   2          while(changeFunctionKey==0); 
+ 145   2          delay_ms(100);
+ 146   2          
+ 147   2        
+ 148   2          if(changeFunctionKey==1){
+ 149   3            loopLedState=loopLedState>4?1:loopLedState+1;
+ 150   3             P1=NUMBER[loopLedState-1];
+ 151   3          }
+ 152   2      //    if(loopLedState==1){
+ 153   2      //      P1=0x3F;
+ 154   2      //    }
+ 155   2          
+ 156   2        }
+ 157   1      }
+ 158          void interruptHandler2() interrupt 2
+ 159          {
+ 160   1        if(changeSpeedKey == 0)
+ 161   1        {
+ 162   2          
+ 163   2          while(changeSpeedKey==0); 
+ 164   2          delay_ms(100);
+ 165   2          
+ 166   2        
+ 167   2      //    if(changeSpeedKey==1){
+ 168   2      //        speed-=100;
+ 169   2      //        if(speed<=0) speed=500;
+ 170   2      //    }
+ 171   2      //    if(loopLedState==1){
+ 172   2      //      P1=0x3F;
+ 173   2      //    }
+ 174   2          
+ 175   2        }
+ 176   1      }
+ 177          
+C51 COMPILER V9.60.0.0   MAIN                                                              11/04/2022 16:01:51 PAGE 4   
+
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    665    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =     32       4
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  1 WARNING(S),  0 ERROR(S)
